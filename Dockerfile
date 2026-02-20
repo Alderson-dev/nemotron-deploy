@@ -6,7 +6,7 @@ RUN pip install -U "vllm>=0.12.0"
 WORKDIR /app
 
 # Bake in the custom reasoning parser at build time
-RUN wget -q -O /app/nano_v3_reasoning_parser.py \
+RUN curl -fsSL -o /app/nano_v3_reasoning_parser.py \
     https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8/resolve/main/nano_v3_reasoning_parser.py
 
 COPY start.sh /app/start.sh
