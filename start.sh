@@ -38,6 +38,7 @@ echo "  Tensor parallel:     $TENSOR_PARALLEL_SIZE"
 echo "  Port:                $PORT"
 echo "  HF cache:            $HF_HOME"
 
+
 exec vllm serve "$MODEL_NAME" \
     --served-model-name "$SERVED_MODEL_NAME" \
     --max-num-seqs "$MAX_NUM_SEQS" \
