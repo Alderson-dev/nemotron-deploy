@@ -48,6 +48,6 @@ exec vllm serve "$MODEL_NAME" \
     --trust-remote-code \
     --enable-auto-tool-choice \
     --tool-call-parser qwen3_coder \
-    --reasoning-parser-plugin /opt/nano_v3_reasoning_parser.py \
+    --reasoning-parser-plugin /opt/parsers/nano_v3_reasoning_parser.py \
     --reasoning-parser nano_v3 \
     --kv-cache-dtype fp8
