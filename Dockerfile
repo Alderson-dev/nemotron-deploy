@@ -1,7 +1,4 @@
-FROM vllm/vllm-openai:latest
-
-# Upgrade vllm to required version (>=0.12.0 for Nemotron-3-Nano FP8 support)
-RUN pip install -U "vllm>=0.12.0"
+FROM vllm/vllm-openai:v0.12.0
 
 RUN mkdir -p /opt/parsers && \
     curl -fsSL -o /opt/parsers/nano_v3_reasoning_parser.py \
