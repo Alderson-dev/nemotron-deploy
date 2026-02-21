@@ -7,10 +7,9 @@ if [ -n "$HF_TOKEN" ]; then
     huggingface-cli login --token "$HF_TOKEN"
 fi
 
-# Model cache: use RunPod network volume if available
-# Mount your network volume at /workspace on RunPod for persistent model caching.
+# Model cache: use RunPod network volume (mounted at /runpod-volume).
 # The model (~30GB) will download on first start and be reused on subsequent starts.
-export HF_HOME="${HF_HOME:-/workspace/.cache/huggingface}"
+export HF_HOME="${HF_HOME:-/runpod-volume/.cache/huggingface}"
 mkdir -p "$HF_HOME"
 
 # --- Configurable parameters (override via RunPod environment variables) ---
