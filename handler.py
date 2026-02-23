@@ -13,6 +13,12 @@ import uvicorn
 
 VLLM_URL = "http://localhost:8000"
 
+# Hop-by-hop and encoding headers that should not be forwarded
+STRIP_HEADERS = {
+    "host", "content-length", "transfer-encoding",
+    "accept-encoding", "connection", "keep-alive", "upgrade",
+}
+
 app = FastAPI()
 
 
@@ -33,7 +39,7 @@ async def ping():
 async def proxy(request: Request, path: str):
     """Forward every other request to vLLM."""
     url = f"{VLLM_URL}/{path}"
-    headers = {k: v for k, v in request.headers.items() if k.lower() != "host"}
+    headers = {k: v for k, v in request.headers.items() if k.lower() not in STRIP_HEADERS}
     body = await request.body()
 
     client = httpx.AsyncClient()
