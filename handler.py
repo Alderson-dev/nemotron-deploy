@@ -23,7 +23,12 @@ def wait_for_vllm(timeout=600, interval=5):
 
 def _post_to_vllm(job_input):
     """Extract route and forward request to vLLM. Returns (url, response)."""
-    openai_route = job_input.pop("openai_route", "/v1/chat/completions")
+    if "openai_route" in job_input:
+        openai_route = job_input.pop("openai_route")
+    elif "messages" in job_input:
+        openai_route = "/v1/chat/completions"
+    else:
+        openai_route = "/v1/completions"
     url = f"{VLLM_BASE_URL}{openai_route}"
     stream = job_input.get("stream", False)
     response = requests.post(url, json=job_input, stream=stream)
