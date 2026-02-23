@@ -18,7 +18,6 @@ SERVED_MODEL_NAME="${SERVED_MODEL_NAME:-model}"
 MAX_MODEL_LEN="${MAX_MODEL_LEN:-262144}"
 MAX_NUM_SEQS="${MAX_NUM_SEQS:-8}"
 TENSOR_PARALLEL_SIZE="${TENSOR_PARALLEL_SIZE:-1}"
-PORT="${PORT:-8000}"
 
 # Required for FP8 MoE performance
 export VLLM_USE_FLASHINFER_MOE_FP8=1
@@ -37,7 +36,6 @@ echo "  Served as:           $SERVED_MODEL_NAME"
 echo "  Max context length:  $MAX_MODEL_LEN"
 echo "  Max sequences:       $MAX_NUM_SEQS"
 echo "  Tensor parallel:     $TENSOR_PARALLEL_SIZE"
-echo "  Port:                $PORT"
 echo "  HF cache:            $HF_HOME"
 
 
@@ -46,7 +44,7 @@ vllm serve "$MODEL_NAME" \
     --max-num-seqs "$MAX_NUM_SEQS" \
     --tensor-parallel-size "$TENSOR_PARALLEL_SIZE" \
     --max-model-len "$MAX_MODEL_LEN" \
-    --port "$PORT" \
+    --port 8000 \
     --trust-remote-code \
     --enable-auto-tool-choice \
     --tool-call-parser qwen3_coder \
@@ -54,5 +52,5 @@ vllm serve "$MODEL_NAME" \
     --reasoning-parser nano_v3 \
     --kv-cache-dtype fp8 &
 
-echo "Waiting for vLLM to start..."
+echo "Starting reverse proxy..."
 python3 /handler.py
