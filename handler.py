@@ -21,28 +21,40 @@ def wait_for_vllm(timeout=600, interval=5):
     raise TimeoutError("vLLM server did not become healthy in time.")
 
 
-def handler(job):
-    job_input = job["input"]
-
+def _post_to_vllm(job_input):
+    """Extract route and forward request to vLLM. Returns (url, response)."""
     openai_route = job_input.pop("openai_route", "/v1/chat/completions")
     url = f"{VLLM_BASE_URL}{openai_route}"
     stream = job_input.get("stream", False)
+    response = requests.post(url, json=job_input, stream=stream)
+    if not response.ok:
+        raise RuntimeError(f"vLLM {response.status_code}: {response.text}")
+    return response
 
-    if stream:
-        response = requests.post(url, json=job_input, stream=True)
-        response.raise_for_status()
 
-        for line in response.iter_lines(decode_unicode=True):
-            if line.startswith("data: "):
-                chunk = line[len("data: "):]
-                if chunk.strip() == "[DONE]":
-                    break
-                yield chunk
-    else:
-        response = requests.post(url, json=job_input)
-        response.raise_for_status()
-        return response.json()
+def handler(job):
+    job_input = job["input"]
+    response = _post_to_vllm(job_input)
+    return response.json()
+
+
+def generator_handler(job):
+    job_input = job["input"]
+    response = _post_to_vllm(job_input)
+    for line in response.iter_lines(decode_unicode=True):
+        if line.startswith("data: "):
+            chunk = line[len("data: "):]
+            if chunk.strip() == "[DONE]":
+                break
+            yield chunk
+
+
+def dynamic_handler(job):
+    """Route to generator or regular handler based on stream flag."""
+    if job["input"].get("stream", False):
+        return generator_handler(job)
+    return handler(job)
 
 
 wait_for_vllm()
-runpod.serverless.start({"handler": handler, "return_aggregate_stream": True})
+runpod.serverless.start({"handler": dynamic_handler, "return_aggregate_stream": True})
