@@ -38,32 +38,25 @@ def _post_to_vllm(job_input):
 
 
 def handler(job):
+    """RunPod handler — always a generator so RunPod streams correctly."""
     job_input = job["input"]
-    response = _post_to_vllm(job_input)
-    return response.json()
 
-
-def generator_handler(job):
-    job_input = job["input"]
-    response = _post_to_vllm(job_input)
-    for line in response.iter_lines(decode_unicode=True):
-        if line.startswith("data: "):
-            chunk = line[len("data: "):]
-            if chunk.strip() == "[DONE]":
-                break
-            yield chunk
-
-
-def dynamic_handler(job):
-    """Route to generator or regular handler based on stream flag."""
     # Unwrap if the caller nested the payload under "openai_input"
-    if "openai_input" in job["input"]:
-        job["input"] = job["input"]["openai_input"]
+    if "openai_input" in job_input:
+        job_input = job_input["openai_input"]
 
-    if job["input"].get("stream", False):
-        return generator_handler(job)
-    return handler(job)
+    response = _post_to_vllm(job_input)
+
+    if job_input.get("stream", False):
+        for line in response.iter_lines(decode_unicode=True):
+            if line.startswith("data: "):
+                chunk = line[len("data: "):]
+                if chunk.strip() == "[DONE]":
+                    break
+                yield chunk
+    else:
+        yield response.json()
 
 
 wait_for_vllm()
-runpod.serverless.start({"handler": dynamic_handler, "return_aggregate_stream": True})
+runpod.serverless.start({"handler": handler, "return_aggregate_stream": True})
