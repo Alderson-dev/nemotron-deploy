@@ -38,7 +38,7 @@ echo "  Port:                $PORT"
 echo "  HF cache:            $HF_HOME"
 
 
-exec vllm serve "$MODEL_NAME" \
+vllm serve "$MODEL_NAME" \
     --served-model-name "$SERVED_MODEL_NAME" \
     --max-num-seqs "$MAX_NUM_SEQS" \
     --tensor-parallel-size "$TENSOR_PARALLEL_SIZE" \
@@ -49,4 +49,7 @@ exec vllm serve "$MODEL_NAME" \
     --tool-call-parser qwen3_coder \
     --reasoning-parser-plugin /opt/parsers/nano_v3_reasoning_parser.py \
     --reasoning-parser nano_v3 \
-    --kv-cache-dtype fp8
+    --kv-cache-dtype fp8 &
+
+echo "Waiting for vLLM to start..."
+python3 /handler.py

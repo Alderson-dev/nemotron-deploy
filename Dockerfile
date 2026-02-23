@@ -4,6 +4,9 @@ RUN mkdir -p /opt/parsers && \
     curl -fsSL -o /opt/parsers/nano_v3_reasoning_parser.py \
     https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-FP8/resolve/main/nano_v3_reasoning_parser.py
 
+RUN pip install runpod requests
+
+COPY handler.py /handler.py
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
