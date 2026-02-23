@@ -23,6 +23,9 @@ PORT="${PORT:-8000}"
 # Required for FP8 MoE performance
 export VLLM_USE_FLASHINFER_MOE_FP8=1
 
+# Enable TF32 tensor cores for faster float32 matmul
+export TORCH_FLOAT32_MATMUL_PRECISION=high
+
 # Needed if MAX_MODEL_LEN > 256k (e.g. 1M context)
 if [ "${MAX_MODEL_LEN}" -gt 262144 ] 2>/dev/null; then
     export VLLM_ALLOW_LONG_MAX_MODEL_LEN=1

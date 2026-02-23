@@ -56,6 +56,10 @@ def generator_handler(job):
 
 def dynamic_handler(job):
     """Route to generator or regular handler based on stream flag."""
+    # Unwrap if the caller nested the payload under "openai_input"
+    if "openai_input" in job["input"]:
+        job["input"] = job["input"]["openai_input"]
+
     if job["input"].get("stream", False):
         return generator_handler(job)
     return handler(job)
