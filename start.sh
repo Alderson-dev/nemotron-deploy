@@ -40,7 +40,7 @@ echo "  HF cache:            $HF_HOME"
 
 
 vllm serve "$MODEL_NAME" \
-    --served-model-name "$SERVED_MODEL_NAME" \
+    --served-model-name "$SERVED_MODEL_NAME" "$MODEL_NAME" \
     --max-num-seqs "$MAX_NUM_SEQS" \
     --tensor-parallel-size "$TENSOR_PARALLEL_SIZE" \
     --max-model-len "$MAX_MODEL_LEN" \

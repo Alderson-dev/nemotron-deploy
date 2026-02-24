@@ -42,15 +42,19 @@ async def proxy(request: Request, path: str):
     headers = {k: v for k, v in request.headers.items() if k.lower() not in STRIP_HEADERS}
     body = await request.body()
 
-    client = httpx.AsyncClient()
-    vllm_request = client.build_request(
-        method=request.method,
-        url=url,
-        headers=headers,
-        content=body,
-        params=request.query_params,
-    )
-    vllm_response = await client.send(vllm_request, stream=True)
+    client = httpx.AsyncClient(timeout=300)
+    try:
+        vllm_request = client.build_request(
+            method=request.method,
+            url=url,
+            headers=headers,
+            content=body,
+            params=request.query_params,
+        )
+        vllm_response = await client.send(vllm_request, stream=True)
+    except (httpx.ConnectError, httpx.ReadTimeout, httpx.ConnectTimeout):
+        await client.aclose()
+        return JSONResponse({"error": "vLLM not available"}, status_code=503)
 
     content_type = vllm_response.headers.get("content-type", "")
 
@@ -69,9 +73,12 @@ async def proxy(request: Request, path: str):
             media_type="text/event-stream",
         )
 
-    content = await vllm_response.aread()
-    await vllm_response.aclose()
-    await client.aclose()
+    try:
+        content = await vllm_response.aread()
+    finally:
+        await vllm_response.aclose()
+        await client.aclose()
+
     return Response(
         content=content,
         status_code=vllm_response.status_code,
